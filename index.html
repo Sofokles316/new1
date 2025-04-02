@@ -144,16 +144,39 @@
             // Показываем сообщение об успехе
             showSuccess("Авторизация успешна! Перенаправление в бот...");
             
-            // Сериализуем данные пользователя
-            const userData = encodeURIComponent(JSON.stringify(user));
+            // Создаем минимальный объект с только необходимыми данными
+            const minUser = {
+                id: user.id,
+                first_name: user.first_name,
+                auth_date: user.auth_date,
+                hash: user.hash
+            };
+            
+            // Добавляем только если они есть
+            if (user.last_name) minUser.last_name = user.last_name;
+            if (user.username) minUser.username = user.username;
             
             // Логируем для отладки
-            console.log('Данные авторизации:', user);
+            console.log('Полные данные авторизации:', user);
+            console.log('Упрощенные данные для передачи:', minUser);
             
-            // Перенаправляем обратно в бот с данными
-            setTimeout(() => {
-                window.location.href = `https://t.me/notpxcheckbot?start=tgauth_${userData}`;
-            }, 1500);
+            try {
+                // Сериализуем данные пользователя
+                const userData = encodeURIComponent(JSON.stringify(minUser));
+                const botUrl = `https://t.me/notpxcheckbot?start=tgauth_${userData}`;
+                
+                // Проверяем длину URL (для отладки)
+                console.log('Длина URL:', botUrl.length);
+                console.log('URL для перенаправления:', botUrl);
+                
+                // Перенаправляем обратно в бот с данными
+                setTimeout(() => {
+                    window.location.href = botUrl;
+                }, 1500);
+            } catch (error) {
+                console.error('Ошибка при создании URL:', error);
+                showError("Произошла ошибка при подготовке данных: " + error.message);
+            }
         }
         
         // Создаём виджет авторизации
